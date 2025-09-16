@@ -1,7 +1,7 @@
 # Club de Lectura de Criptografía - FAMAF 2025
 
 El presente repositorio contiene todo el material usado por el club de Criptografía de la FAMAF durante el año 2025, a cargo de la profesora Arantxa Zapico.
-Este mismo está basado principalmente en el libro _A Graduate Course in Applied Cryptography_ por _Dan Boneh_ y _Victor Shoup_.
+Este mismo está basado principalmente en el libro [A Graduate Course in Applied Cryptography](https://crypto.stanford.edu/~dabo/cryptobook/BonehShoup_0_6.pdf) por _Dan Boneh_ y _Victor Shoup_.
 
 ## Semanas
 

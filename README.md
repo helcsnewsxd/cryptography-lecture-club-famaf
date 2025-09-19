@@ -14,7 +14,7 @@ La distribución del contenido semanal, elegida por nosotros en base a nuestros 
 | 1      | Public Key Tools                                             | Bruno     |
 | 2      | [Chosen Plaintext Attack](./week-2-chosen-plaintext-attack/) | Emanuel   |
 | 3      | Message integrity                                            | Lucas     |
-| 4      | Encryption                                                   | Sebastián |
+| 4      | [Encryption](./week-4-encryption/)                           | Sebastián |
 | 5      | Hash-based Signatures                                        | Sebastián |
 | 6      | Proving systems                                              | Sebastián |
 | 7      | Chosen Ciphertext attack                                     | Lucas     |

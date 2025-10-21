@@ -18,7 +18,7 @@ La distribución del contenido semanal, elegida por nosotros en base a nuestros 
 | 5      | Hash-based Signatures                                        | Sebastián |
 | 6      | Proving systems                                              | Sebastián |
 | 7      | Chosen Ciphertext attack                                     | Lucas     |
-| 8      | Elliptic Curves and Pairings                                 | Emanuel   |
+| 8      | [Elliptic Curves and Pairings](./week-8-ecc/)                | Emanuel   |
 | 9      | PQ from lattices                                             | Lucas     |
 | 10     | Digital Signatures                                           | Bruno     |
 | 11     | Threshold Cryptography                                       | Bruno     |

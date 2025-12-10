@@ -9,22 +9,22 @@ La distribución del contenido semanal, elegida por nosotros en base a nuestros 
 
 <div align="center">
 
-| Semana | Tema                                                         | Speaker   |
-| ------ | ------------------------------------------------------------ | --------- |
-| 1      | Public Key Tools                                             | Bruno     |
-| 2      | [Chosen Plaintext Attack](./week-2-chosen-plaintext-attack/) | Emanuel   |
-| 3      | Message integrity                                            | Lucas     |
-| 4      | [Encryption](./week-4-encryption/)                           | Sebastián |
-| 5      | Hash-based Signatures                                        | Sebastián |
-| 6      | Proving systems                                              | Sebastián |
-| 7      | Chosen Ciphertext attack                                     | Lucas     |
-| 8      | [Elliptic Curves and Pairings](./week-8-ecc/)                | Emanuel   |
-| 9      | PQ from lattices                                             | Lucas     |
-| 10     | Digital Signatures                                           | Bruno     |
-| 11     | Threshold Cryptography                                       | Bruno     |
-| 12     | Sigma Protocols (and Fiat Shamir?)                           | Lucas     |
-| 13     | Secure Multiparty Computation                                | Bruno     |
-| 14     | Attacks on Number Theory Assumptions                         | Emanuel   |
-| 15     | Zero-knowledge                                               | Emanuel   |
+| Semana | Tema                                                                                    | Speaker   |
+| ------ | --------------------------------------------------------------------------------------- | --------- |
+| 1      | Public Key Tools                                                                        | Bruno     |
+| 2      | [Chosen Plaintext Attack](./week-2-chosen-plaintext-attack/)                            | Emanuel   |
+| 3      | Message integrity                                                                       | Lucas     |
+| 4      | [Encryption](./week-4-encryption/)                                                      | Sebastián |
+| 5      | Hash-based Signatures                                                                   | Sebastián |
+| 6      | Proving systems                                                                         | Sebastián |
+| 7      | Chosen Ciphertext attack                                                                | Lucas     |
+| 8      | [Elliptic Curves and Pairings](./week-8-ecc/)                                           | Emanuel   |
+| 9      | PQ from lattices                                                                        | Lucas     |
+| 10     | Digital Signatures                                                                      | Bruno     |
+| 11     | Threshold Cryptography                                                                  | Bruno     |
+| 12     | Sigma Protocols (and Fiat Shamir?)                                                      | Lucas     |
+| 13     | Secure Multiparty Computation                                                           | Bruno     |
+| 14     | [Attacks on Number Theory Assumptions](./week-14-attacks-on-number-theory-assumptions/) | Emanuel   |
+| 15     | Lattices                                                                                | Lucas     |
 
 </div>

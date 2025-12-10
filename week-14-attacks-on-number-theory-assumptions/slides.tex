@@ -1,0 +1,386 @@
+\documentclass{beamer}
+\usetheme{Frankfurt}
+
+\usepackage{aliascnt}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+
+% Math environment
+\setbeamertemplate{theorem}[ams style]
+\deftranslation[to=spanish]{Theorem}{Teorema}
+\deftranslation[to=spanish]{Corollary}{Corolario}
+\deftranslation[to=spanish]{Lemma}{Lema}
+\deftranslation[to=spanish]{Proof}{Demostración}
+\deftranslation[to=spanish]{Definition}{Definición}
+\deftranslation[to=spanish]{Example}{Ejemplo}
+\theoremstyle{remark}
+\newtheorem{remark}{Nota}
+
+% Pseudocode environment
+\usepackage[ruled,vlined]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+\renewcommand{\algorithmautorefname}{Algoritmo}
+\renewcommand{\listalgorithmcfname}{Índice de algoritmos}
+
+\title{Ataques a Supuestos de Teoría de Números}
+\subtitle{Logaritmo discreto y Diffie-Hellman}
+\author{Emanuel Nicolás Herrador}
+\institute{Facultad de Matemática, Astronomía, Física y Computación\\Universidad Nacional de Córdoba}
+\titlegraphic{\includegraphics[width=5cm]{logo.png}}
+\date{09 de Diciembre 2025}
+
+\newcommand{\appendixtitle}{
+  \title{Apéndice}
+  \subtitle{Material complementario}
+}
+
+\begin{document}
+\frame{\titlepage}
+
+\AtBeginSection[]{
+  \begin{frame}
+    \frametitle{Índice}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+\section{Logaritmo discreto}
+\begin{frame}{DL (1) - Repaso}
+  Suponemos $\mathbb{G}$ un grupo cíclico de orden $q$ generado por $g \in \mathbb{G}$.
+  Dado $u \in \mathbb{G}$, encontrar $\alpha \in \mathbb{Z}_q$ tal que $g^\alpha = u$.
+
+
+  \begin{remark}
+    Consideramos $q$ general, i.e., puede o no ser primo.
+
+    $\alpha$ es llamado como el logaritmo discreto de $u$ base $g$.
+  \end{remark}
+\end{frame}
+\begin{frame}{DL (2) - Fuerza bruta}
+  Intentar $\beta = 1,\dots, q\ \Rightarrow\ \mathcal{O}(q)$ operaciones en $\mathbb{G}$.
+
+  \begin{algorithm}[H]
+    \DontPrintSemicolon
+    \footnotesize
+    \caption{Fuerza bruta}
+    \KwIn{$u,g \in \mathbb{G}$}
+    \KwOut{$\beta \in \mathbb{Z}_q : g^\beta = u$}
+    $v \leftarrow 1 \in \mathbb{G}$ \\ 
+    $\beta \leftarrow 0 \in \mathbb{Z}_q$ \\ 
+    \While{$v \neq u$}{
+      $v \leftarrow v \cdot g$ \\ 
+      $\beta \leftarrow \beta + 1$
+    }
+    \KwRet{$\beta$}
+  \end{algorithm}
+\end{frame}
+
+\begin{frame}{DL (3) - MitM}
+  Meet-in-the-Middle approach $\Rightarrow \mathcal{O}(2\sqrt{q})$ operaciones en $\mathbb{G}$.
+
+  \alt<2>{
+    \begin{remark}
+      Contra $\rightarrow\ \mathcal{O}(m) = \mathcal{O}(\sqrt{q})$ valores en memoria.
+
+      Trade-off $\rightarrow$ Otro $m$: $\mathcal{O}\left(\frac{q}{m}\right),\ \mathcal{O}(m)$
+      en runtime, memoria.
+
+      Adaptable $\rightarrow$ Rango $[A, B]$ con $\mathcal{O}(\sqrt{\ell})$
+      donde $\ell = B-A+1$.
+    \end{remark}
+  }{
+    Sea $m = \left\lfloor\sqrt{q}\right\rfloor$, suponemos $0 \leq \beta,\gamma < m$:
+    \begin{equation*}
+      \begin{aligned}
+        \alpha &= \gamma \cdot m + \beta \\ 
+        u = (g^m)^\gamma \cdot g^\beta
+              &\Rightarrow u \cdot (g^{-m})^\gamma = g^\beta
+      \end{aligned}
+    \end{equation*}
+
+    \begin{columns}[T]
+      \column{0.5\textwidth}
+      \begin{algorithm}[H]
+        \DontPrintSemicolon
+        \footnotesize
+        \caption{Construcción}
+        \KwIn{$g \in \mathbb{G}$}
+        $v \leftarrow 1 \in \mathbb{G}$ \\ 
+        \For{$\beta \in [0, m)$}{
+          $L_r[v] \leftarrow \beta$ \\ 
+          $v \leftarrow v \cdot g$
+        }
+      \end{algorithm}
+
+      \column{0.5\textwidth}
+      \begin{algorithm}[H]
+        \DontPrintSemicolon
+        \footnotesize
+        \caption{Query}
+        \KwIn{$u,g \in \mathbb{G}$}
+        \KwOut{$\alpha \in \mathbb{Z} : g^\alpha = u$}
+        $g' \leftarrow g^{-m},\ v \leftarrow u,\ \gamma \leftarrow 0$ \\ 
+        \While{$v \notin \text{Dom}(L_r)$}{
+          $v \leftarrow v \cdot g'$ \\ 
+          $\gamma \leftarrow \gamma + 1$
+        }
+        $\beta \leftarrow L_r[v]$ \\ 
+        $\alpha \leftarrow \gamma \cdot m + \beta$
+        \KwRet{$\alpha$}
+      \end{algorithm}
+    \end{columns}
+  }
+\end{frame}
+
+\begin{frame}{DL (4) - Pollard's Rho}
+  \alt<4>{
+    \begin{proof}[Correctitud]
+      Si suponemos que termina, $u^ig^x = v = v' = u^{2i}g^{x'}$.
+      Luego, $u = (g^{x-x'})^{i^{-1}} = g^{(x-x')i^{-1}}$
+    \end{proof}
+    \begin{proof}[Cantidad de iteraciones]
+      Si consideramos $q+1$ elementos, por principio del palomar
+      hay un ciclo trivial que Floyd encuentra.
+      Luego, esta es la cota con $q$ iteraciones hechas.
+      Se considera $i < q$ porque $u^q g^x = u^{2q} g^{x'} \Rightarrow g^x = g^{x'}$
+      y no se puede obtener información.
+    \end{proof}
+    \begin{proof}[Complejidad y probabilidad]
+      Por \textit{Birthday paradox}, bastan $\sqrt{q}$ iteraciones para
+      encontrar la colisión, suponiendo $F$ random (y por consecuencia $H$ también).
+      Probabilidad exponencialmente chica sale del mismo resultado.
+    \end{proof}
+  }{
+  Pollard's Rho DL con Floyd cycle detection $\Rightarrow\ \mathcal{O}(\sqrt{q}), \mathcal{O}(1)$
+  en ops, memoria con probabilidad de falla $\mathcal{O}(e^{-cq})$ con $c > 0$.
+  \alt<3>{
+    Suponemos $F:\mathbb{G}\to\{0,\dots,q-1\}$ pseudo-random y $H:\mathbb{G}\to\mathbb{G}$ tal 
+    que $H(v) = vug^{F(v)}$.
+
+    \begin{algorithm}[H]
+      \DontPrintSemicolon
+      \footnotesize
+      \caption{Pollard's Rho}
+      \KwIn{$u,g \in \mathbb{G}, q \in \mathbb{Z}$}
+      \KwOut{$\alpha \in \mathbb{Z} : g^\alpha = u$ o ``Failed''}
+      $i \leftarrow 1,\ x \leftarrow 0,\ v \leftarrow u$ \\ 
+      $x' \leftarrow F(v),\ v' \leftarrow H(v)$ \\ 
+      \While{$v \neq v'$}{
+        $x \leftarrow (x + F(v)) \mod q,\ v \leftarrow H(v)$ \\ 
+        $x' \leftarrow (x' + F(v')) \mod q,\ v' \leftarrow H(v')$ \\ 
+        $x' \leftarrow (x' + F(v')) \mod q,\ v' \leftarrow H(v')$ \\ 
+        $i \leftarrow i + 1$
+      }
+      \If{$i < q$}{
+        \KwRet{$\alpha = (x-x')i^{-1} \mod q$}
+      }
+      \KwRet{``Failed''}
+    \end{algorithm}
+  }{
+  \alt<2>{
+    \begin{proof}[Presencia]
+      Sean $L$, $a$ longitud del ciclo e iteraciones requeridas para slow para
+      alcanzar el ciclo.
+      Sea $k > 0 : kL \geq a$, cuando slow mueva $kL$, fast movió
+      $2kL$ y ambos entran al ciclo.
+      Como fast hizo $kL$ pasos más y el largo del ciclo es $L$, se encuentran
+      en el mismo punto.
+    \end{proof}
+    \begin{proof}[Inicio]
+      Ambos punteros mueven $a + xL + b (x \geq 0)$ pasos
+      ($a$ para alcanzar el ciclo, $x$ veces el ciclo completo y $b$ al final).
+      Sea $x$ para slow e $y$ para fast:
+      $a+yL+b = 2(a+xL+b) \Rightarrow a = (y-2x)L - b$.
+      Luego, al estar $b$ pasos del inicio del ciclo, si mueven $a$ más lo alcanzan.
+      I.e., resetear slow y mover ambos de a 1 paso $a$ veces funciona.
+    \end{proof}
+  }{
+    \begin{block}{Algoritmo de la tortuga y liebre (Floyd)}
+      Encontrar un ciclo en una linked list.
+
+      \begin{itemize}
+        \item \textit{Presencia}: dos punteros (slow, fast) comenzando al principio.
+        Slow mueve 1, fast 2 en cada iteración.
+        Si colisionan, hay ciclo.
+        
+        \item \textit{Inicio del ciclo}: reseteá slow comenzando al principio.
+        Ambos mueven 1. Se encontrarán en el inicio del ciclo.
+      \end{itemize}
+    \end{block}
+  }}}
+\end{frame}
+
+\begin{frame}{DL (5) - Orden $q^e$}
+  \alt<3>{
+    La complejidad es $\mathcal{O}(e \cdot T_\text{base} + e\log{e}\log{q})$.
+
+    En el cuerpo de RDL (sin llamadas recursivas) se hacen $\mathcal{O}(e\log{q})$
+    operaciones de grupo.
+    Si $T_\text{base}$ es la cantidad de operaciones de grupo para el caso base,
+    entonces la complejidad se aproxima por:
+    \begin{equation*}
+      T(e) = 2T(e/2) + O(e\log{q})
+    \end{equation*}
+    Finalmente, entonces, si se resuelve la recurrencia tenemos 
+    $T(e) = O(e\cdot T_\text{base} + e\log{e}\log{q})$.
+
+    \begin{remark}
+      $T_\text{base}$ es el término dominante y, por ende, DLOG en $\mathbb{G}$
+      es difícil como computarlo para un subgrupo de orden $q$.
+    \end{remark}
+  }{
+  Suponemos $\mathbb{G}$ con orden $q^e$ ($q > 1, e \geq 1$).
+  Luego:
+  \begin{equation*}
+    g_f := g^{(q^f)} \in \mathbb{G} \quad\text{genera subgrupo de orden } q^{e-f}
+  \end{equation*}
+  \alt<2>{
+    \begin{algorithm}[H]
+      \DontPrintSemicolon
+      \footnotesize
+      \caption{RDL: Atacando orden $q^e$}
+      \KwIn{$g,u \in \mathbb{G}, q>1,e\geq 1 \in \mathbb{Z}$}
+      \KwOut{$\alpha \in \mathbb{Z} : g^\alpha = u$}
+      \If{$e = 1$}{
+        \KwRet{$\log_g u$} (Pollard's rho por ejemplo)
+      }
+      $f \leftarrow \left\lfloor\frac{e}{2}\right\rfloor$ \\ 
+      $\beta \leftarrow \text{RDL}(q, f, g_{e-f}, u^{(q^{e-f})})$ \\ 
+      $\gamma \leftarrow \text{RDL}(q, e-f, g_f, u/g^B)$ \\
+      \KwRet $q^f\gamma + \beta$
+    \end{algorithm}
+  }{
+    Sea $u = g^\alpha$ para $0 \leq \alpha < q^e$.
+    Si $e = 1$, resolvemos normalmente ($u$ en subgrupo de orden $q$).
+    Si $e > 1$, sea $f \in [1, e)$:
+    \begin{equation*}
+      \begin{aligned}
+        \alpha = q^f\gamma + \beta \text{ con } 0\leq \beta < q^f,\ 0 \leq \gamma < q^{e-f} \\ 
+        u = g^a = g^{q^f\gamma + \beta} = g_f^\gamma g^\beta
+        \Rightarrow u^{(q^{e-f})} = g_{e-f}^\beta
+      \end{aligned}
+    \end{equation*}
+    Luego, computamos $\text{DLOG}(u^{(q^{e-f})},\ g_{e-f}) = \beta$
+    y obtenemos $\frac{u}{g^\beta} = g_f^\gamma$.
+    Computando $\text{DLOG}(u/g^B, g_f) = \gamma$, encontramos $\alpha$.
+
+    \textit{Idea del algoritmo:} recursivamente en $\log$ pasos tomando $f \approx \frac{e}{2}$.
+  }}
+\end{frame}
+
+\begin{frame}{DL (6) - Pohlig-Hellman}
+  \alt<3>{
+    \begin{remark}
+      Sea $T(w)$, monótona creciente, el nro de operaciones necesarias para calcular DL en un subgrupo de 
+      $\mathbb{G}$ de orden $w$.
+      Luego:
+      \begin{equation*}
+        \sum_{i=1}^r \mathcal{O}(e_iT(q_i) + e_i\log{e_i}\log{q_i}) = 
+        \mathcal{O}(T(q_\text{max})\log{n} + \log{n}\log\log{n})
+      \end{equation*}
+      Y, por ende, la dificultad está determinada por la complejidad de calcular 
+      DLOG en un grupo cíclico con orden $q_\text{max}$.
+    \end{remark}
+    \begin{remark}
+      DL es fácil en grupos con orden producto de primos chicos.
+      Luego, el orden de $\mathbb{G}$ \textit{debe tener a menos un factor primo ``largo''}.
+    \end{remark}
+  }{
+  \alt<2>{
+    Suponemos $\mathbb{G}$ con orden $n = q_1^{e_1} \dots q_r^{e_r}$ (factorización en primos).
+    Asumimos que sabemos la factorización.
+
+    Sea $i = 1,\dots,r$, se define $q_i^* := n/q_i^{e_i} \in \mathbb{Z}$.
+    Luego, $u^{q_i^*} = \left(g^{q_i^*}\right)^\alpha$ donde $g^{q_i^*}$ tiene 
+    orden $q_i^{e_i}$ en $\mathbb{G}$.
+    Sea $0 \leq \alpha_i < q_i^{e_i}$ el DL de $u^{q_i^*}$ base $g^{q_i^*}$,
+    $\alpha \equiv \alpha_i \pmod{q_i^{e_i}}$.
+
+    Por ello, computando $\alpha_1,\dots,\alpha_r$ usando RDL, obtenemos
+    $\alpha$ usando CRT.
+  }{
+    Un poco de repaso:
+    \begin{theorem}[Teorema Chino del Resto (CRT)]
+      Sean $\{n_i\}_{i=1}^k$ una familia de enteros positivos coprimos y 
+      $a_1,\dots,a_k$ enteros arbitrarios.
+      Entonces $\exists a \in \mathbb{Z}$ solución del sistema de congruencias
+      \begin{equation*}
+        a \equiv a_i \pmod{n_i} \quad i = 1,\dots,k
+      \end{equation*}
+      Más aún, cualquier $a' \in \mathbb{Z}$ es solución sii $a \equiv a' \pmod{n}$
+      donde $n = \prod_{i=1}^k n_i$.
+    \end{theorem}
+    \begin{remark}
+      Dado $n$, se puede computar el único entero $0 \leq a < n$ que satisface
+      en tiempo $\mathcal{O}(len(n)^2)$.
+    \end{remark}
+  }}
+\end{frame}
+
+\section{Decision Diffie-Hellman}
+\begin{frame}{DDH - Leakage en orden compuesto}
+  \begin{exampleblock}{Caso $\mathbb{G}$ de orden $n = 2m$ (Generalizable a primos chicos)}
+    Sea $u = g^\alpha \in \mathbb{G}$,
+    \begin{equation}
+      \alpha \text{ es par} \iff u^{n/2} = 1.
+    \end{equation}
+
+    Sea $u = g^\alpha, v = g^\beta \in \mathbb{G}$,
+    \begin{equation}
+      \alpha\beta \in \mathbb{Z}_n \text{ es par} \iff (u^{n/2} = 1 \lor v^{n/2} = 1).
+    \end{equation}
+
+    Podemos aprender un bit de información sobre el 
+    secreto de DH ($g^{\alpha\beta}$).
+    Sea $(g^\alpha, g^\beta, w=g^\gamma) \in \mathbb{G}^3$ una tupla DDH,
+    obtenemos paridad de $\gamma$ por $(1)$ y de $\alpha\beta$ por $(2)$.
+    Si coinciden, aceptamos y sino rechazamos.
+
+    Como siempre acepta cuando $w = g^{\alpha\beta}$, pero cuando $w \xleftarrow{\$} G$
+    lo hace con probabilidad $1/2$, sacamos ventaja $1/2$ de romper DDH.
+  \end{exampleblock}
+\end{frame}
+
+\section{Static Diffie-Hellman}
+\begin{frame}{SDH - The Brown-Gallant-Cheon algorithm}
+  \alt<2>{
+    En algunos grupos, SDH es más fácil que DLOG.
+    Consideremos $\mathcal{A}$ dado por:
+    \begin{enumerate}
+      \item $g_0 := g$
+      \item Para $i = 1,\dots,d$, SDH query para $g_{i-1}$ obteniendo $g_i := g_{i-1}^\alpha$
+      \item $\mathcal{A}$ tiene:
+        \begin{equation*}
+          v_\alpha := \left(g, g^\alpha, g^{(\alpha^2)}, \dots, g^{(\alpha^d)}\right)
+        \end{equation*}
+        Y se puede obtener $\alpha$ con mejor complejidad si $d | q-1$ o $d | q+1$.
+    \end{enumerate}
+    En particular, si $d | q-1$, se usan $\mathcal{O}(\sqrt{q/d} + \sqrt{d})$ operaciones,
+    mientras que si $d | q+1$ se usan $\mathcal{O}(\sqrt{q/d}+d)$.
+
+    \begin{remark}
+      Un adversario SDH en un grupo genérico con $d$ queries y probabilidad
+      $1/2$ de éxito toma tiempo al menos $\Omega(\sqrt{q/d})$.
+      Luego, $\sqrt{d}$ es el mejor speed-up en un grupo genérico.
+    \end{remark}
+  }{
+    Algo de repaso:
+    \begin{definition}[Juego SDH]
+      Sea $\mathbb{G}$ grupo cíclico de orden primo $q$, para un adversario $\mathcal{A}$
+      el juego es:
+      \begin{itemize}
+        \item Challenger elige $a \xleftarrow{\$} \mathbb{Z}_q$
+        \item $\mathcal{A}$ hace SDH queries: envía $v \in \mathbb{G}$
+          y recibe $w := v^\alpha \in \mathbb{G}$.
+        \item $\mathcal{A}$ responde $\tilde{\alpha} \in \mathbb{Z}_q$
+      \end{itemize}
+      Donde $\mathcal{A}$ gana si $\alpha = \tilde{\alpha}$.
+    \end{definition}
+  }
+\end{frame}
+
+\end{document}
